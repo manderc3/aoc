@@ -1,0 +1,46 @@
+#include <fstream>
+#include <iostream>
+#include <cstdint>
+#include <string>
+#include <vector>
+
+struct rec
+{
+    rec(const int l, const int w, const int h) : l{ 0 }, w{ 0 }, h{ 0 } {};
+    int l, w, h;
+};
+
+int main()
+{
+    std::vector<rec> recs;
+    
+    std::ifstream input("input.txt");
+    std::string line;
+
+    const auto get = [&line] (const int begin, const int i) { return std::atoi(line.substr(begin, i - 1 - begin).c_str()); };
+    
+    while(std::getline(input, line))
+    {
+	int begin_pos { 0 }, num_count { 0 }, l { 0 }, w { 0 }, h { 0 };
+	
+	for (int i; i < line.size(); ++i)
+	{
+	    if (line[i] == 'x')
+	    {
+		if      (num_count == 0) { l = get(begin_pos, i); }
+		else if (num_count == 1) { w = get(begin_pos, i); }
+		else                     { h = get(begin_pos, i); }
+
+		if (num_count < 2) { num_count++; begin_pos = i + 1;}
+	    }
+	}
+
+	// got l, w and h. Create a rect
+	recs.emplace_back(l, w, h);
+    }
+
+    for (const auto& rec : recs)
+    {
+	std::cout << rec.l << 'x' << rec.w << 'x' << rec.h << '\n';
+    }
+}
