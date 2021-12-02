@@ -49,16 +49,37 @@ auto compute_travel_distance(std::ifstream& input)
     return horizontal * depth;
 }
 
+auto compute_travel_distance_deux(std::ifstream& input)
+{
+    int horizontal { 0 }, depth { 0 }, aim { 0 };
+ 
+    std::unordered_map<std::string, std::function<void(const int)>> actions
+    {
+	{ "up", [&] (const int units) { aim -= units; } },
+	{ "down", [&] (const int units) { aim += units; } },
+	{ "forward", [&] (const int units) { horizontal += units; depth += aim * units; } },
+    };
+
+    for (;;)
+    {
+	auto [direction, steps] = get_next_instruction(input);
+
+	if (direction.empty())
+	{
+	    break;
+	}
+
+	actions[direction](steps);
+    }
+
+    return horizontal * depth;
+}
+
 int main()
 {
     std::ifstream input { "input" };
 
-    const auto result = compute_travel_distance(input);
+    const auto result = compute_travel_distance_deux(input);
 
     std::cout << "result: " << result << '\n';
-
-    if (true)
-    {
-	int foo { 1 };
-    }
 }
