@@ -23,63 +23,50 @@ auto get_next_instruction(std::ifstream& input)
     return std::make_pair<std::string, int>("",  -1);
 }
 
-auto compute_travel_distance(std::ifstream& input)
-{
-    int horizontal { 0 }, depth { 0 };
+template<typename params>
+using action_map = std::unordered_map<std::string, std::function<void(params&, const int)>>;
 
-    std::unordered_map<std::string, std::function<void(const int)>> actions
-    {
-	{ "up", [&depth] (const int steps) { depth -= steps; } },
-	{ "down", [&depth] (const int steps) { depth += steps; } },
-	{ "forward", [&horizontal] (const int steps) { horizontal += steps; } },
-    };
-     
+template<typename params>
+auto compute_travel_distance(std::ifstream& input, const action_map<params>& a_map, params& p)
+{
     for (;;)
     {
-	auto [direction, steps] = get_next_instruction(input);
+	const auto [direction, steps] = get_next_instruction(input);
 
 	if (direction.empty())
 	{
 	    break;
 	}
 
-	actions[direction](steps);
+	a_map.at(direction)(p, steps);
     }
 
-    return horizontal * depth;
-}
-
-auto compute_travel_distance_deux(std::ifstream& input)
-{
-    int horizontal { 0 }, depth { 0 }, aim { 0 };
- 
-    std::unordered_map<std::string, std::function<void(const int)>> actions
-    {
-	{ "up", [&] (const int units) { aim -= units; } },
-	{ "down", [&] (const int units) { aim += units; } },
-	{ "forward", [&] (const int units) { horizontal += units; depth += aim * units; } },
-    };
-
-    for (;;)
-    {
-	auto [direction, steps] = get_next_instruction(input);
-
-	if (direction.empty())
-	{
-	    break;
-	}
-
-	actions[direction](steps);
-    }
-
-    return horizontal * depth;
+    return p.horizontal * p.depth;
 }
 
 int main()
 {
     std::ifstream input { "input" };
 
-    const auto result = compute_travel_distance_deux(input);
+    // struct params_a { int depth { 0 }, horizontal { 0 }; } p_a;
+    // const action_map<params_a> actions_a
+    // {
+    // 	{ "up", [] (params_a& p, const int steps) { p.depth -= steps; } },
+    // 	{ "down", [] (params_a& p, const int steps) { p.depth += steps; } },
+    // 	{ "forward", [] (params_a& p, const int steps) { p.horizontal += steps; } },
+    // };
 
-    std::cout << "result: " << result << '\n';
+    // const auto result_a = compute_travel_distance(input, actions_a, p_a);
+    // std::cout << "result_a: " << result_a << '\n';
+
+    struct params_b { int depth { 0 }, horizontal { 0 }, aim { 0 }; } p_b;
+    const action_map<params_b> actions_b
+    {
+	{ "up", [] (params_b& p, const int units) { p.aim -= units; } },
+	{ "down", [] (params_b& p, const int units) { p.aim += units; } },
+	{ "forward", [] (params_b& p, const int units) { p.horizontal += units; p.depth += p.aim * units; } },
+    };
+
+    const auto result_b = compute_travel_distance(input, actions_b, p_b);
+    std::cout << "result_b: " << result_b << '\n';
 }
