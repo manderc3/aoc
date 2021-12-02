@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <numeric>
 
 auto get_next_val(std::ifstream& input)
 {
@@ -42,8 +43,8 @@ auto compute_total_window_increases(std::ifstream& input)
     while (values[3] != -1)
     {
 	// compute the totals of the windows
-	const auto previous { values[0] + values[1] + values[2] };
-	const auto current { values[1] + values[2] + values[3] };
+	const auto previous { std::accumulate(values.begin(), values.begin() + 3, 0) };
+	const auto current { std::accumulate(values.begin() + 1, values.end(), 0) };
 
 	if (current > previous)
 	{
